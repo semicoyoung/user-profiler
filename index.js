@@ -1,3 +1,4 @@
+'use strict';
 var validator = require('validator');
 var ALiMns = require('ali-mns');
 

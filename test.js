@@ -1,7 +1,6 @@
 'use strict';
 
 var Entrance = require('./index');
-var expect = require('chai').expect;
 
 var entrance = new Entrance({
    "accountId": "1922933588405985",
