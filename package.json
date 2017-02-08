@@ -18,9 +18,9 @@
   "bugs": {
     "url": "https://github.com/semicoyoung/user-profiler/issues"
   },
-  "dependencies": {
+  "devDependencies": {
      "validator": "^6.2.1",
-     "ali-mns": "^2.6.0",
-  }
+     "ali-mns": "^2.6.0"
+  },
   "homepage": "https://github.com/semicoyoung/user-profiler#readme"
 }
