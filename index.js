@@ -45,7 +45,7 @@ let iterJson = function(json, keyArr, retObj) {
         if (key == 'email' && !validator.isEmail(json[key])) {
           continue;
         }
-        if (key == 'phone' && !validator.isMobilePhone(json[key], 'zh-CN')) {
+        if (key == 'phone' && !validator.isMobilePhone(String(json[key]), 'zh-CN')) {
           continue;
         }
         retObj[key] = json[key];
