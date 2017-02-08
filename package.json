@@ -1,0 +1,26 @@
+{
+  "name": "user-profiler",
+  "version": "1.0.0",
+  "description": "extract user info for project user_profiler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/semicoyoung/user-profiler.git"
+  },
+  "keywords": [
+    "user_profiler"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/semicoyoung/user-profiler/issues"
+  },
+  "dependencies": {
+     "validator": "^6.2.1",
+     "ali-mns": "^2.6.0",
+  }
+  "homepage": "https://github.com/semicoyoung/user-profiler#readme"
+}
