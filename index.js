@@ -32,7 +32,7 @@ Extract.prototype.extract = function(data) {
   this.mq.sendP(JSON.stringify(extractData)).then(function() {
     console.log('data===', extractData);
   }, function(error) {
-    console.log(error.stack);
+    console.log(error);
   });
 };
 
