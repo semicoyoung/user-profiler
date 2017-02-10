@@ -1,6 +1,7 @@
 'use strict';
 var validator = require('validator');
 var ALiMns = require('ali-mns');
+var _ = require('lodash');
 
 /*
  * @param mqOptions.accountId 
@@ -19,39 +20,91 @@ function Extract(mqOptions){
   this.mq = mq;
 }
 
-Extract.prototype.extract = function(data) {
-  let extractData = [];
-  let keyArr = ['phone', 'email', 'userId', 'user_id', 'cookieId', 'cookie_id', 'userName', 'user_name', 'qq', 'weChat', '微信', 'ip'];
-  for (let i = 0, len = data.length; i < len; i++) {
-    let json = data[i];
-    let retObj = {};
-    iterJson(json, keyArr, retObj);
-    extractData.push(retObj);
-  }
+Extract.prototype.extract = function (data) {
+  let keyMap = {
+    'phone': 'phone',
+    'Phone': 'phone',
+    'sell': 'phone',
+    'mobile': 'phone',
+    'mobilePhone': 'phone',
+    'mobile_phone': 'phone',
+    'email': 'email',
+    'mail': 'email',
+    'user_id': 'user_id',
+    'userId': 'user_id',
+    'cookie_id': 'cookie_id',
+    'cookieId': 'cookie_id',
+    'cookie': 'cookie_id',
+    'user_name': 'user_name',
+    'userName': 'user_name',
+    'name': 'user_name',
+    'ip': 'ip',
+    'IP': 'ip',
+    'age': 'age',
+    'address': 'address',
+    'qq': 'qq',
+    'QQ': 'qq',
+    'qq_number': 'qq',
+    'qqNumber': 'qq',
+    'QQ_number': 'qq',
+    'QQNumber': 'qq',
+    'wechat': 'wechat',
+    'weChat': 'wechat',
+    '微信': 'wechat'
+  };
 
-  this.mq.sendP(JSON.stringify(extractData)).then(function() {
-    console.log('data===', extractData);
-  }, function(error) {
-    console.log(error);
-  });
-};
-
-let iterJson = function(json, keyArr, retObj) {
-  for(var key in json) {
-    if(json[key] && typeof json[key] == 'object') {
-      iterJson(json[key], keyArr, retObj);
-    } else {
-      if (json[key] && json[key] != '' && keyArr.indexOf(key) != -1) {
-        if (key == 'email' && !validator.isEmail(json[key])) {
-          continue;
-        }
-        if (key == 'phone' && !validator.isMobilePhone(String(json[key]), 'zh-CN')) {
-          continue;
-        }
-        retObj[key] = json[key];
+  let retArr = [];
+  if (data instanceof Array) {
+    for (let i = 0, len = data.length; i < len; i++) {
+      let retObj = {};
+      iterData(data[i], keyMap, retObj);
+      if (!_.isEmpty(retObj)) {
+        retArr.push(retObj);
       }
     }
   }
+  else if (data instanceof Object && !(data instanceof Array)) {
+    let retObj = {};
+    iterData(data, keyMap, retObj);
+    if (!_.isEmpty(retObj)) {
+      retArr.push(retObj);
+    }
+  }
+
+  this.mq.sendP(JSON.stringify(retArr)).then(function() {
+    console.log('data === ', retObj);
+  }, function (err) {
+    console.log(err);
+  });
 };
+
+let iterData = function(data, keyMap, retObj) {
+  // data is an Array
+  if (data && data instanceof Array) {
+    for (let i = 0, len = data.length; i < len; i++) {
+      iterData(data[i], keyMap, retObj);
+    }
+  }
+  // data is an Object
+  else if (data && data instanceof Object && !(data instanceof Array)) {
+    for (let key in data) {
+      if (keyMap[key]) {
+        if (keyMap[key] == 'phone' && !validator.isMobilePhone(String(data[key]), 'zh-CN')) {
+          continue;
+        }
+        else if (keyMap[key] == 'email' && !validator.isEmail(String(data[key]))) {
+          continue;
+        }
+        else {
+          retObj[keyMap[key]] = data[key];
+        }
+      }
+      // data[key] is an Array or Object, then continue to iterate
+      else if (data[key] && data[key] instanceof Object) {
+        iterData(data[key], keyMap, retObj);
+      }
+    }
+  }
+}
 
 module.exports = Extract;
