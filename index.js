@@ -72,7 +72,7 @@ Extract.prototype.extract = function (data) {
   }
 
   this.mq.sendP(JSON.stringify(retArr)).then(function() {
-    console.log('data === ', retObj);
+    console.log('data === ', retArr);
   }, function (err) {
     console.log(err);
   });
