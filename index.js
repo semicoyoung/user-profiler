@@ -17,7 +17,6 @@ function Extract(mqOptions){
 
   let account = new ALiMns.Account(mqOptions.accountId, mqOptions.accessKeyId, mqOptions.accessKeySecret);
   let mq = new ALiMns.MQ(mqOptions.queueName, account, mqOptions.queueRegion);
-  this.mq = mq;
 
   return function(req, res, next) {
     let params = {};
@@ -89,11 +88,14 @@ function Extract(mqOptions){
       }
     }
 
-    this.mq.sendP(JSON.stringify(extractResult)).then(function() {
-      console.log('data===', extractResult);
-    }, function(error) {
-      console.log(error);
-    });
+    if (extractResult && extractResult.length) {
+      mq.sendP(JSON.stringify(extractResult)).then(function() {
+        console.log('data===', extractResult);
+      }, function(error) {
+        console.log(error);
+      });
+    }
+
     next();
   }
 }
