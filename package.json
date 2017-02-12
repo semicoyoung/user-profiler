@@ -1,6 +1,6 @@
 {
   "name": "user-profiler",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "extract user info for project user_profiler",
   "main": "index.js",
   "scripts": {
