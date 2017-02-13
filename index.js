@@ -9,7 +9,7 @@ var _ = require('lodash');
  * @param mqOptions.queueName
  * @param mqOptions.queueRegion
  */
-function Extract(mqOptions){
+function Extract (mqOptions) {
   mqOptions = mqOptions || {};
   if (!mqOptions.accountId || !mqOptions.accessKeyId || !mqOptions.accessKeySecret || !mqOptions.queueName || !mqOptions.queueRegion) {
     throw new Error('argument lack');
@@ -18,7 +18,7 @@ function Extract(mqOptions){
   let account = new ALiMns.Account(mqOptions.accountId, mqOptions.accessKeyId, mqOptions.accessKeySecret);
   let mq = new ALiMns.MQ(mqOptions.queueName, account, mqOptions.queueRegion);
 
-  return function(req, res, next) {
+  return function (req, res, next) {
     let params = {};
     switch (req.method) {
       case 'GET':
@@ -29,11 +29,7 @@ function Extract(mqOptions){
         break;
     }
 
-    for (let key in req.params) {
-      params[key] = req.params[key];
-    }
-
-    let data = params;
+    _.assign(params, req.params);
 
     let keyMap = {
       'phone': 'phone',
@@ -72,35 +68,52 @@ function Extract(mqOptions){
     };
 
     let extractResult = [];
-    if (data instanceof Array) {
-      for(let i = 0, len = data.length; i < len; i++) {
+    if (params instanceof Array) {
+      for (let i = 0, len = params.length; i < len; i++) {
         let retObj = {};
-        iterData(data[i], keyMap, retObj);
+        iterData(params[i], keyMap, retObj);
         if (!_.isEmpty(retObj)) {
           extractResult.push(retObj);
         }
       }
-    } else if (data instanceof Object) {
+    } else if (params instanceof Object) {
       let retObj = {};
-      iterData(data, keyMap, retObj);
+      iterData(params, keyMap, retObj);
       if (!_.isEmpty(retObj)) {
         extractResult.push(retObj);
       }
     }
 
     if (extractResult && extractResult.length) {
-      mq.sendP(JSON.stringify(extractResult)).then(function() {
-        console.log('data===', extractResult);
-      }, function(error) {
-        console.log(error);
-      });
+      let sendArr = [];
+      for (let j = 0, jLen = extractResult.length; j < jLen; j++) {
+        // if current data is too big, then abandon it
+        if (byteCount(JSON.stringify(extractResult[j])) >= 64000) {
+          continue;
+        }
+
+        if (byteCount(JSON.stringify(sendArr) + JSON.stringify(extractResult[j]) + ',') >= 64000) {
+          mq.sendP(JSON.stringify(sendArr)).then(function () {}, function (error) {
+            console.log(error);
+          });
+          sendArr = [];
+        }
+
+        sendArr.push(extractResult[j]);
+      }
+
+      if (sendArr && sendArr.length) {
+        mq.sendP(JSON.stringify(sendArr)).then(function() {}, function(error) {
+          console.log(error);
+        });
+      }
     }
 
     next();
   }
 }
 
-let iterData = function(data, keyMap, retObj) {
+let iterData = function (data, keyMap, retObj) {
   // data is an Array
   if (data instanceof Array) {
     for (let i = 0, len = data.length; i < len; i++) {
@@ -124,6 +137,10 @@ let iterData = function(data, keyMap, retObj) {
     }
   }
 };
+
+let byteCount = function (s) {
+  return encodeURI(s).split(/%..|./).length - 1;
+}
 
 module.exports = Extract;
 
