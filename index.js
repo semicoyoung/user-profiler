@@ -123,6 +123,8 @@ let iterData = function (data, keyMap, retObj) {
     for (let key in data) {
       if (data[key] && data[key] instanceof Object) {
         iterData(data[key], keyMap, retObj);
+      } else if (JSON.parse(data[key]) instanceof Object) {
+        iterData(JSON.parse(data[key]), keyMap, retObj);
       } else {
         if (keyMap[key]) {
           if (keyMap[key] == 'phone' && !validator.isMobilePhone(String(data[key]), 'zh-CN')) {
