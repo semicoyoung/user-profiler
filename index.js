@@ -10,6 +10,7 @@ var _ = require('lodash');
  * @param mqOptions.queueRegion
  */
 function Extract(mqOptions){
+  mqOptions = mqOptions || {};
   if (!mqOptions.accountId || !mqOptions.accessKeyId || !mqOptions.accessKeySecret || !mqOptions.queueName || !mqOptions.queueRegion) {
     throw new Error('argument lack');
   }
